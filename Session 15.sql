@@ -267,7 +267,7 @@ BEGIN
 	INSERT INTO user_log(user_id,action) VALUE
     (new.user_id,CONCAT('User receive friend request to : ',new.friend_id));
     
-    INSERT INTO user_log(friend_id,action) VALUE
+    INSERT INTO user_log(user_id,action) VALUE
     (new.friend_id,CONCAT('User send friend request to : ',new.user_id));
 
 END $$
@@ -370,6 +370,9 @@ BEGIN
     
     DELETE FROM Friends
     WHERE user_id = p_user_id AND friend_id = p_friend_id;
+    
+    DELETE FROM Friends
+    WHERE user_id = p_friend_id AND friend_id = p_user_id;
 	COMMIT;
     
 END $$
