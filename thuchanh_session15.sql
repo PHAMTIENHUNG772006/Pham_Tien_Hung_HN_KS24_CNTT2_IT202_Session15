@@ -177,26 +177,35 @@ begin
 end $$
 delimiter ;
 
-
-
+update Grades set Score = 8.5 where StudentID = 'SV01';
 
 
 -- Câu 6 (Stored Procedure & Transaction - 1.5đ): Viết một Stored Procedure tên sp_DeleteStudentGrade nhận vào p_StudentID và p_SubjectID. Thủ tục này thực hiện việc sinh viên xin hủy môn học nhưng phải đảm bảo an toàn dữ liệu:
 
 
-delimiter $$
-create procedure sp_DeleteStudentGrade  (p_StudentID  char(5), p_SubjectID char(5))
+-- Câu 6
+delimiter //
+create procedure sp_DeleteStudentGrade(
+	in p_StudentID char(5),
+    in p_SubjectID char(5))
 begin
+	declare current_score decimal(10,2);
 
 	start transaction;
-    
-		insert into GradeLog(StudentID,OldScore,NewScore ,ChangeDate  ) values (old.StudentID,old.Score,new.Score , now());
-	
-    delete from Grades where StudentID = p_StudentID and SubjectID = p_SubjectID;
-    
-    commit;
-    
-end $$
-delimiter ;
+		select score into current_score
+        from grades
+        where StudentId = p_StudentID and SubjectID = p_SubjectId;
 
-call sp_PayTuition('SV01',2000000);
+	insert into GradeLog(studentId, oldScore, newScore, changeDate)
+    value(p_StudentID, current_score, null, now());
+
+    delete from grades
+    where studentID = p_studentID and subjectId = p_subjectID;
+
+    if row_count() = 0 then
+		rollback;
+	else
+		commit;
+	end if;
+end //
+delimiter ;
